@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draft — The meeting ended. The backlog is ready.</title>
+  <meta name="description" content="Draft turns product calls into sprint-ready tasks. Connect Zoom, push to Linear. Zero notes required.">
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://usedraft.ai/">
+  <meta property="og:title"       content="Draft — The meeting ended. The backlog is ready.">
+  <meta property="og:description" content="Draft listens to your product calls, extracts every action item, and pushes sprint-ready tasks to Linear or Jira — in seconds.">
+  <meta property="og:image"       content="https://usedraft.ai/og-image.png">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta name="twitter:title"      content="Draft — AI for product teams">
+  <meta name="twitter:description" content="Stop writing tasks. Start shipping.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0D0B08;
+      --bg2:      #120E0A;
+      --surface:  #181410;
+      --card:     #1F1A13;
+      --border:   #2B221A;
+      --border2:  #382C20;
+      --fg:       #EAE2D6;
+      --muted:    #7A6E60;
+      --accent:   #E8954A;
+      --accent-d: #D4803A;
+      --glow:     rgba(232,149,74,0.14);
+      --nav-h:    60px;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
+    .heading  { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; line-height: 1.12; letter-spacing: -0.025em; }
+    .label    { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .mono     { font-family: 'JetBrains Mono', monospace; }
+
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 0 52px; }
+    @media (max-width: 900px) { .wrap { padding: 0 20px; } }
+
+    .line { border: none; border-top: 1px solid var(--border); }
+
+    .rv { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+    .rv.in { opacity: 1; transform: none; }
+
+    @keyframes up { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    .u  { opacity: 0; animation: up .55s ease forwards; }
+    .u1 { animation-delay:   0ms; }
+    .u2 { animation-delay: 120ms; }
+    .u3 { animation-delay: 240ms; }
+    .u4 { animation-delay: 360ms; }
+    .u5 { animation-delay: 480ms; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
+      padding: 11px 22px; border-radius: 8px; border: none;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+    .btn-fill { background: var(--accent); color: #fff; }
+    .btn-fill:hover { background: var(--accent-d); box-shadow: 0 0 24px var(--glow); }
+    .btn-line { background: transparent; color: var(--fg); border: 1px solid var(--border2); }
+    .btn-line:hover { border-color: var(--muted); background: rgba(255,255,255,0.025); }
+
+    /* Lang switcher */
+    .lang-btn {
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+      padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer;
+      background: transparent; color: var(--muted);
+      transition: background 120ms, color 120ms;
+    }
+    .lang-btn:hover { color: var(--fg); }
+    .lang-btn.active { background: var(--accent); color: #fff; }
+
+    /* App frame */
+    .app-frame {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(232,149,74,0.06), 0 32px 80px rgba(0,0,0,0.65), 0 0 60px var(--glow);
+      display: flex;
+      flex-direction: column;
+    }
+    .app-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Sidebar item active state */
+    .sb-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 18px; cursor: pointer;
+      transition: background 120ms;
+      user-select: none;
+    }
+    .sb-item:hover { background: rgba(255,255,255,0.03); }
+    .sb-item[data-active] {
+      background: rgba(232,149,74,0.1) !important;
+      border-radius: 5px;
+      margin: 0 6px;
+      padding: 7px 12px;
+    }
+    .sb-item[data-active] svg { stroke: var(--accent) !important; }
+    .sb-item[data-active] .sb-label { color: var(--accent) !important; }
+
+    /* Integration pill */
+    .ipill {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: border-color 150ms;
+    }
+    .ipill:hover { border-color: var(--border2); }
+
+    /* Persona row */
+    .persona-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 40px;
+      padding: 36px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .persona-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    /* Step */
+    .step-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 40px;
+      padding: 44px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-n {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      color: var(--border2);
+      line-height: 1;
+    }
+
+    .stat-n {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: var(--fg);
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* Aurora background blobs */
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .u  { animation: none !important; opacity: 1 !important; }
+      .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
+      [style*="animation"] { animation: none !important; }
+    }
+
+    @keyframes aurora1 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      25%  { transform: translate(-90px, 70px) scale(1.18); }
+      50%  { transform: translate(50px,-50px) scale(0.92); }
+      75%  { transform: translate(70px, 40px) scale(1.06); }
+    }
+    @keyframes aurora2 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      30%  { transform: translate(110px,-60px) scale(1.12); }
+      65%  { transform: translate(-70px, 80px) scale(0.88); }
+    }
+    @keyframes aurora3 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      40%  { transform: translate(-90px,-70px) scale(1.22); }
+      72%  { transform: translate(60px, 55px) scale(0.85); }
+    }
+
+    /* App frame 3D parallax */
+    .app-frame {
+      transition: transform 220ms ease-out, box-shadow 220ms ease-out;
+      will-change: transform;
+    }
+
+    /* App panel transitions */
+    #app-panel { transition: opacity 150ms ease; }
+    #app-panel.fading { opacity: 0; }
+
+    @media (max-width: 860px) {
+      .hero-grid { display: block !important; }
+      .hero-mockup { display: none; }
+      .hero-text { padding: 40px 0 !important; justify-content: flex-start !important; }
+      .step-row { grid-template-columns: 1fr; gap: 16px; }
+      .step-n { font-size: 2rem; }
+      .step-inner { grid-template-columns: 1fr !important; }
+      .persona-row { grid-template-columns: 1fr; gap: 12px; }
+      .integ-grid { grid-template-columns: repeat(2,1fr) !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════ -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);background:rgba(13,11,8,0.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;">
+  <div class="wrap" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+
+    <a href="#" style="display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="6" fill="var(--accent)" opacity=".14"/>
+        <path d="M7 7h6a4 4 0 010 8H7V7z" stroke="var(--accent)" stroke-width="1.75" stroke-linejoin="round"/>
+        <path d="M7 15v2" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--fg);">Draft</span>
+      <span style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--accent);background:rgba(232,149,74,.12);border:1px solid rgba(232,149,74,.24);padding:2px 6px;border-radius:4px;">BETA</span>
+    </a>
+
+    <div style="display:flex;align-items:center;gap:24px;">
+      <a href="#how"   style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.how">How it works</span></a>
+      <a href="#who"   style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.who">For teams</span></a>
+      <a href="#integ" style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.integ">Integrations</span></a>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <!-- Language switcher -->
+      <div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px;gap:1px;">
+        <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn"        data-lang="ru" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn"        data-lang="pl" onclick="setLang('pl')">PL</button>
+      </div>
+      <a href="#cta" class="btn btn-fill"><span data-i18n="nav.cta">Join the beta</span></a>
+    </div>
+
+  </div>
+</nav>
+
+
+<!-- ══ HERO ══════════════════════════════════════════ -->
+<section style="height:calc(100vh - var(--nav-h));margin-top:var(--nav-h);overflow:hidden;position:relative;">
+
+  <!-- Aurora animated background -->
+  <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;">
+    <div style="position:absolute;width:760px;height:560px;top:-140px;right:-80px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,149,74,.07),transparent 60%);animation:aurora1 22s ease-in-out infinite;"></div>
+    <div style="position:absolute;width:520px;height:440px;bottom:-120px;left:20px;border-radius:50%;background:radial-gradient(ellipse,rgba(200,100,40,.06),transparent 60%);animation:aurora2 28s ease-in-out infinite;animation-delay:-9s;"></div>
+    <div style="position:absolute;width:420px;height:380px;top:25%;left:30%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,165,80,.04),transparent 60%);animation:aurora3 35s ease-in-out infinite;animation-delay:-18s;"></div>
+  </div>
+
+  <div class="hero-grid" style="display:grid;grid-template-columns:1fr 1.65fr;height:100%;position:relative;z-index:1;">
+
+    <!-- LEFT: text -->
+    <div class="hero-text" style="display:flex;flex-direction:column;justify-content:space-between;padding:60px 52px 48px 52px;">
+
+      <div class="u u1" style="display:inline-flex;align-items:center;gap:8px;background:rgba(232,149,74,.1);border:1px solid rgba(232,149,74,.22);padding:5px 12px;border-radius:100px;margin-bottom:24px;align-self:flex-start;">
+        <span style="width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;"></span>
+        <span class="label" style="font-size:10px;" data-i18n="hero.badge">Private beta · AI for product teams</span>
+      </div>
+
+      <h1 class="display u u2" style="font-size:clamp(2.4rem,4.2vw,3.8rem);color:var(--fg);margin-bottom:20px;">
+        <span data-i18n="hero.h1a">The meeting ended.</span><br>
+        <span data-i18n="hero.h1b" style="color:var(--accent);">The backlog</span><br>
+        <span data-i18n="hero.h1c">is ready.</span>
+      </h1>
+
+      <p class="u u3" data-i18n="hero.sub" style="font-size:15px;color:var(--muted);line-height:1.65;max-width:380px;margin-bottom:28px;">
+        Draft listens to your product calls, extracts every action item, and pushes sprint-ready tasks to Linear or Jira — in seconds.
+      </p>
+
+      <div class="u u4" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+        <a href="#cta" class="btn btn-fill">
+          <span data-i18n="hero.cta1">Join the beta</span>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5h9M6.5 2l4.5 4.5L6.5 11"/></svg>
+        </a>
+        <a href="#how" class="btn btn-line"><span data-i18n="hero.cta2">How it works</span></a>
+      </div>
+
+      <p class="u u5" data-i18n="hero.trust" style="font-size:12px;color:var(--muted);">
+        Free during beta · No credit card · Invite within 48h
+      </p>
+
+      <!-- Trusted by strip -->
+      <div class="u u5" style="border-top:1px solid var(--border);padding-top:24px;">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.05em;">USED BY TEAMS FROM</p>
+        <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+          <!-- Stripe-style wordmarks -->
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--border2);letter-spacing:-.02em;">Vercel</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--border2);letter-spacing:-.02em;">Loom</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--border2);letter-spacing:-.02em;">Pitch</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--border2);letter-spacing:-.02em;">Raycast</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--border2);letter-spacing:-.02em;">Linear</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: interactive app mockup -->
+    <div class="hero-mockup" style="position:relative;overflow:hidden;padding:28px 36px 0 16px;">
+
+      <div class="app-frame" style="height:100%;">
+
+        <!-- App chrome bar -->
+        <div class="app-bar">
+          <span class="dot" style="background:#FF5F57;"></span>
+          <span class="dot" style="background:#FEBC2E;"></span>
+          <span class="dot" style="background:#28C840;"></span>
+          <div style="flex:1;display:flex;justify-content:center;">
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:3px 14px;font-size:11px;color:var(--muted);" class="mono">app.usedraft.ai</div>
+          </div>
+          <span id="app-bar-title" class="mono" style="font-size:10px;color:var(--muted);">Draft · Workspace</span>
+        </div>
+
+        <!-- App content: sidebar + panel -->
+        <div style="display:grid;grid-template-columns:148px 1fr;flex:1;overflow:hidden;min-height:0;">
+
+          <!-- Sidebar -->
+          <div style="background:var(--card);border-right:1px solid var(--border);padding:14px 0;display:flex;flex-direction:column;gap:1px;overflow:hidden;flex-shrink:0;">
+            <div style="padding:0 10px;margin-bottom:8px;"><span class="label" style="font-size:9px;padding:0 8px;">Workspace</span></div>
+
+            <div id="sb-meetings" class="sb-item" data-active onclick="setAppState('meetings')" style="margin:0 6px;padding:7px 12px;border-radius:5px;background:rgba(232,149,74,0.1);">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0;"><rect x="1" y="1" width="11" height="11" rx="2"/><path d="M3.5 6.5h6M3.5 4.5h6M3.5 8.5h4"/></svg>
+              <span class="sb-label" style="font-size:12px;color:var(--accent);font-weight:500;">Meetings</span>
+              <span id="sb-meetings-badge" style="margin-left:auto;font-size:9px;background:var(--accent);color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;">3</span>
+            </div>
+
+            <div id="sb-tasks" class="sb-item" onclick="setAppState('tasks')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5"/><path d="M4 6.5l2 2 3-3"/></svg>
+              <span class="sb-label" style="font-size:12px;color:var(--muted);">Tasks</span>
+            </div>
+
+            <div id="sb-integrations" class="sb-item" onclick="setAppState('integrations')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" style="flex-shrink:0;"><rect x="1" y="3" width="11" height="8" rx="1.5"/><path d="M1 5.5h11"/></svg>
+              <span class="sb-label" style="font-size:12px;color:var(--muted);">Integrations</span>
+            </div>
+
+            <hr class="line" style="margin:10px 0;">
+            <div style="padding:0 10px;margin-bottom:6px;"><span class="label" style="font-size:9px;padding:0 8px;">Recent</span></div>
+            <div id="sb-recent-1" onclick="setAppState('detail')" style="padding:5px 18px;font-size:11px;color:var(--accent);cursor:pointer;transition:color 120ms;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">· Sprint Planning</div>
+            <div onclick="setAppState('detail')" style="padding:5px 18px;font-size:11px;color:var(--muted);cursor:pointer;transition:opacity 120ms;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">· Customer call</div>
+            <div onclick="setAppState('detail')" style="padding:5px 18px;font-size:11px;color:var(--muted);cursor:pointer;transition:opacity 120ms;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">· Design retro</div>
+          </div>
+
+          <!-- Dynamic panel -->
+          <div id="app-panel" style="display:flex;flex-direction:column;overflow:hidden;min-height:0;"></div>
+
+        </div>
+      </div>
+
+      <!-- Gradient fade at bottom -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:130px;background:linear-gradient(to bottom,transparent 0%,var(--bg) 85%);pointer-events:none;"></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══ STATS ═════════════════════════════════════════ -->
+<div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:36px 0;">
+  <div class="wrap rv">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);">
+      <div style="text-align:center;padding:8px;border-right:1px solid var(--border);">
+        <div class="stat-n"><span class="count-num" data-target="4.8" data-decimals="1">0</span><span style="color:var(--accent);">h</span></div>
+        <div data-i18n="stats.s1" style="font-size:12px;color:var(--muted);margin-top:6px;">saved per PM / week</div>
+      </div>
+      <div style="text-align:center;padding:8px;border-right:1px solid var(--border);">
+        <div class="stat-n"><span style="color:var(--accent);">&lt;</span><span class="count-num" data-target="5" data-decimals="0">0</span><span style="color:var(--accent);">s</span></div>
+        <div data-i18n="stats.s2" style="font-size:12px;color:var(--muted);margin-top:6px;">call to tasks, average</div>
+      </div>
+      <div style="text-align:center;padding:8px;">
+        <div class="stat-n"><span class="count-num" data-target="200" data-decimals="0">0</span><span style="color:var(--accent);">+</span></div>
+        <div data-i18n="stats.s3" style="font-size:12px;color:var(--muted);margin-top:6px;">teams on waitlist</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PROBLEM ═══════════════════════════════════════ -->
+<section style="padding:112px 0;">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;" class="rv">
+
+      <div>
+        <div style="width:36px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px;"></div>
+        <h2 class="display" data-i18n="prob.q" style="font-size:clamp(1.6rem,3vw,2.4rem);color:var(--fg);margin-bottom:8px;">
+          "Let's add this<br>to the backlog."
+        </h2>
+        <h2 class="display" data-i18n="prob.a" style="font-size:clamp(1.6rem,3vw,2.4rem);color:var(--muted);margin-bottom:28px;">
+          Nobody does.
+        </h2>
+        <p data-i18n="prob.p" style="font-size:15px;color:var(--muted);line-height:1.7;max-width:360px;">
+          Product decisions get buried in Zoom recordings. Action items live in Notion drafts nobody reads. The backlog on Monday is guesswork.
+        </p>
+      </div>
+
+      <div>
+        <div style="border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:24px;">
+          <div class="label" data-i18n="prob.p1l" style="margin-bottom:10px;">Pain 01</div>
+          <div data-i18n="prob.p1h" style="font-size:14px;font-weight:600;color:var(--fg);margin-bottom:6px;">30 min after every call</div>
+          <div data-i18n="prob.p1p" style="font-size:14px;color:var(--muted);line-height:1.6;">Writing notes, converting to tickets, tracking who said what. Every meeting. Every time.</div>
+        </div>
+        <div style="border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:24px;">
+          <div class="label" data-i18n="prob.p2l" style="margin-bottom:10px;">Pain 02</div>
+          <div data-i18n="prob.p2h" style="font-size:14px;font-weight:600;color:var(--fg);margin-bottom:6px;">Context disappears</div>
+          <div data-i18n="prob.p2p" style="font-size:14px;color:var(--muted);line-height:1.6;">By the time tickets get created, the decision context is gone. Nobody knows why the backlog looks like it does.</div>
+        </div>
+        <div>
+          <div class="label" data-i18n="prob.p3l" style="margin-bottom:10px;">Pain 03</div>
+          <div data-i18n="prob.p3h" style="font-size:14px;font-weight:600;color:var(--fg);margin-bottom:6px;">4 tools to create 1 task</div>
+          <div data-i18n="prob.p3p" style="font-size:14px;color:var(--muted);line-height:1.6;">Zoom → Notion → Linear → Slack. Every meeting, every time, for every task.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ HOW IT WORKS ══════════════════════════════════ -->
+<section id="how" style="padding:0 0 112px;">
+  <div class="wrap">
+    <hr class="line" style="margin-bottom:72px;">
+
+    <div class="rv" style="display:flex;align-items:baseline;gap:20px;margin-bottom:64px;">
+      <h2 class="display" data-i18n="how.title" style="font-size:clamp(1.7rem,3.5vw,2.6rem);color:var(--fg);">How Draft works</h2>
+      <span class="mono" style="font-size:11px;color:var(--muted);">3 steps</span>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-row rv">
+      <div class="step-n">01</div>
+      <div class="step-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+        <div>
+          <h3 class="heading" data-i18n="how.s1h" style="font-size:clamp(1.1rem,2vw,1.4rem);color:var(--fg);margin-bottom:12px;">Connect your calls</h3>
+          <p data-i18n="how.s1p" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:18px;">Link Zoom, Google Meet, or paste a Loom URL. Draft processes recordings silently — no bot, no extra setup required.</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Zoom</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Google Meet</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Loom</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Teams</span>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div class="label" style="margin-bottom:12px;">Select source</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="background:rgba(232,149,74,.08);border:1px solid rgba(232,149,74,.25);border-radius:7px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="8" height="9" rx="1.5" fill="#2D8CFF" opacity=".8"/><path d="M10 7l5-3v8l-5-3V7z" fill="#2D8CFF" opacity=".8"/></svg>
+              <span style="font-size:12px;color:var(--fg);font-weight:500;flex:1;">Zoom workspace</span>
+              <span style="font-size:9px;color:var(--accent);background:rgba(232,149,74,.12);padding:2px 7px;border-radius:3px;">Connected</span>
+            </div>
+            <div id="step1-gmeet" style="background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+              <div style="width:16px;height:16px;border-radius:4px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#34A853;flex-shrink:0;">G</div>
+              <span style="font-size:12px;color:var(--muted);flex:1;">Google Meet</span>
+              <span onclick="connectGoogleMeet(this)" style="font-size:9px;color:var(--muted);background:var(--border);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all 150ms;" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="">Connect →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-row rv">
+      <div class="step-n">02</div>
+      <div class="step-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+        <div>
+          <h3 class="heading" data-i18n="how.s2h" style="font-size:clamp(1.1rem,2vw,1.4rem);color:var(--fg);margin-bottom:12px;">AI extracts every decision</h3>
+          <p data-i18n="how.s2p" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:18px;">Draft identifies action items, blockers, owners, and deadlines from natural conversation. Context, not just keywords.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
+              <span data-i18n="how.s2f1">Recognizes assignees by name</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
+              <span data-i18n="how.s2f2">Auto-detects priority from urgency signals</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
+              <span data-i18n="how.s2f3">Links tasks to exact transcript timestamps</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div class="label">Analyzing</div>
+            <span class="mono" style="font-size:11px;color:var(--accent);">82%</span>
+          </div>
+          <div style="height:2px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden;">
+            <div style="width:82%;height:100%;background:var(--accent);border-radius:2px;"></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="font-size:10px;color:var(--accent);background:rgba(232,149,74,.1);border:1px solid rgba(232,149,74,.2);padding:3px 9px;border-radius:100px;">3 action items</span>
+            <span style="font-size:10px;color:#FF5F57;background:rgba(255,95,87,.08);border:1px solid rgba(255,95,87,.2);padding:3px 9px;border-radius:100px;">1 blocker</span>
+            <span style="font-size:10px;color:var(--muted);background:rgba(92,98,128,.1);border:1px solid var(--border);padding:3px 9px;border-radius:100px;">2 decisions</span>
+            <span style="font-size:10px;color:var(--muted);background:rgba(92,98,128,.1);border:1px solid var(--border);padding:3px 9px;border-radius:100px;">4 owners</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-row rv">
+      <div class="step-n">03</div>
+      <div class="step-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+        <div>
+          <h3 class="heading" data-i18n="how.s3h" style="font-size:clamp(1.1rem,2vw,1.4rem);color:var(--fg);margin-bottom:12px;">Push to backlog. One click.</h3>
+          <p data-i18n="how.s3p" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:18px;">Review generated tasks, edit if needed, push directly to Linear, Jira, or Notion. Each task arrives with full decision context.</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Linear</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Jira</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">Notion</span>
+            <span style="font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px;">GitHub Issues</span>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div style="display:flex;gap:5px;margin-bottom:12px;">
+            <div style="flex:1;background:rgba(232,149,74,.1);border:1px solid rgba(232,149,74,.3);border-radius:6px;padding:7px;text-align:center;font-size:11px;color:var(--accent);font-weight:600;">Linear</div>
+            <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px;text-align:center;font-size:11px;color:var(--muted);">Jira</div>
+            <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px;text-align:center;font-size:11px;color:var(--muted);">Notion</div>
+          </div>
+          <div class="mono" style="background:rgba(0,0,0,.25);border-radius:6px;padding:10px;margin-bottom:10px;font-size:10px;color:var(--muted);">
+            <div style="margin-bottom:6px;color:var(--accent);">→ ENG-Sprint-24</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1042 · Scope onboarding</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1043 · Fix auth bug (P0)</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;opacity:.4;"><div style="width:9px;height:9px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;"></div>ENG-1044 · Analytics → Q3</div>
+            <div style="display:flex;gap:6px;align-items:center;opacity:.4;"><div style="width:9px;height:9px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;"></div>ENG-1045 · Design sync</div>
+          </div>
+          <button id="step3-push" onclick="pushToLinear(this)" class="btn btn-fill" style="width:100%;justify-content:center;padding:9px;font-size:12px;border-radius:6px;">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5h8M6 1.5l4 4.5-4 4.5"/></svg>
+            <span data-i18n="how.push">Push 4 tasks to Linear</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══ FOR WHO ════════════════════════════════════════ -->
+<section id="who" style="padding:112px 0;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="rv" style="margin-bottom:56px;">
+      <h2 class="display" data-i18n="who.title" style="font-size:clamp(1.7rem,3.5vw,2.6rem);color:var(--fg);max-width:460px;">Built for the people running product</h2>
+    </div>
+
+    <div class="rv">
+      <div class="persona-row">
+        <div class="display" data-i18n-html="who.r1h" style="font-size:clamp(1.2rem,2.2vw,1.75rem);color:var(--fg);">Product<br>Managers.</div>
+        <div style="padding-top:4px;">
+          <p data-i18n="who.r1p" style="font-size:14px;color:var(--muted);line-height:1.7;max-width:500px;margin-bottom:14px;">Sprint planning, backlog grooming, stakeholder calls — every meeting generates a ready board. Stop being the note-taker. Start being the decision-maker.</p>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--muted);">→ Sprint Planning</span>
+            <span style="font-size:12px;color:var(--muted);">→ Stakeholder Reviews</span>
+            <span style="font-size:12px;color:var(--muted);">→ Customer Interviews</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="persona-row">
+        <div class="display" data-i18n-html="who.r2h" style="font-size:clamp(1.2rem,2.2vw,1.75rem);color:var(--fg);">Engineering<br>Leads.</div>
+        <div style="padding-top:4px;">
+          <p data-i18n="who.r2p" style="font-size:14px;color:var(--muted);line-height:1.7;max-width:500px;margin-bottom:14px;">Retros and standups become Jira tickets without a PM in the loop. Engineers know what to work on — without waiting for someone to update the board.</p>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--muted);">→ Retrospectives</span>
+            <span style="font-size:12px;color:var(--muted);">→ Architecture Reviews</span>
+            <span style="font-size:12px;color:var(--muted);">→ Incident Debriefs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="persona-row">
+        <div class="display" data-i18n-html="who.r3h" style="font-size:clamp(1.2rem,2.2vw,1.75rem);color:var(--fg);">Startup<br>Founders.</div>
+        <div style="padding-top:4px;">
+          <p data-i18n="who.r3p" style="font-size:14px;color:var(--muted);line-height:1.7;max-width:500px;margin-bottom:14px;">10–50 people, no dedicated PM. Customer calls become feature requests. Board meetings become roadmap decisions. Draft keeps your team aligned without the overhead.</p>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--muted);">→ Board Meetings</span>
+            <span style="font-size:12px;color:var(--muted);">→ Customer Discovery</span>
+            <span style="font-size:12px;color:var(--muted);">→ Weekly Syncs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══ TESTIMONIALS ══════════════════════════════════ -->
+<section style="padding:112px 0;border-top:1px solid var(--border);">
+  <div class="wrap">
+    <div class="rv" style="display:flex;align-items:baseline;gap:20px;margin-bottom:56px;">
+      <h2 class="display" style="font-size:clamp(1.7rem,3.5vw,2.6rem);color:var(--fg);">Early users say</h2>
+      <span class="mono" style="font-size:11px;color:var(--muted);">beta feedback</span>
+    </div>
+
+    <div class="rv" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:20px;">
+        <div style="font-size:15px;color:var(--fg);line-height:1.65;flex:1;">
+          "We ran a 47-minute sprint planning. Draft produced 6 Linear tickets before anyone had opened Notion. That's the shift."
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(232,149,74,.15);border:1px solid rgba(232,149,74,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;">M</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--fg);">Marcus T.</div>
+            <div style="font-size:11px;color:var(--muted);">Head of Product · Series A SaaS</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid rgba(232,149,74,.2);border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:20px;">
+        <div style="font-size:15px;color:var(--fg);line-height:1.65;flex:1;">
+          "I stopped dreading Monday backlog grooming. Draft turns Friday's customer calls into Tuesday's sprint — automatically."
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(232,149,74,.15);border:1px solid rgba(232,149,74,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;">S</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--fg);">Sara K.</div>
+            <div style="font-size:11px;color:var(--muted);">Founder · B2B Startup, 18 people</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:20px;">
+        <div style="font-size:15px;color:var(--fg);line-height:1.65;flex:1;">
+          "My team's retros now end with a ready Jira board. Engineers stopped asking what the priorities are. Draft answered that."
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(232,149,74,.15);border:1px solid rgba(232,149,74,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;">A</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--fg);">Alex R.</div>
+            <div style="font-size:11px;color:var(--muted);">Engineering Lead · Product studio</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ INTEGRATIONS ══════════════════════════════════ -->
+<section id="integ" style="padding:112px 0;">
+  <div class="wrap">
+    <div class="rv" style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;flex-wrap:wrap;gap:16px;">
+      <h2 class="display" data-i18n="integ.title" style="font-size:clamp(1.6rem,3vw,2.4rem);color:var(--fg);max-width:320px;line-height:1.15;">Fits your existing stack</h2>
+      <p data-i18n="integ.sub" style="font-size:14px;color:var(--muted);max-width:320px;text-align:right;line-height:1.6;">No migration, no new workflows. Draft connects to the tools your team already uses every day.</p>
+    </div>
+
+    <div class="integ-grid rv" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div class="ipill"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="8" height="10" rx="1.5" fill="#2D8CFF" opacity=".8"/><path d="M10 7.5l6-3.5v10l-6-3.5v-3z" fill="#2D8CFF" opacity=".8"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Zoom</div><div style="font-size:11px;color:var(--muted);">Recording sync</div></div></div>
+      <div class="ipill"><div style="width:18px;height:18px;border-radius:4px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#34A853;flex-shrink:0;">G</div><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Google Meet</div><div style="font-size:11px;color:var(--muted);">Live transcript</div></div></div>
+      <div class="ipill"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 3l12 6-6 1L3 15V3z" fill="#5A64FF"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Linear</div><div style="font-size:11px;color:var(--muted);">Issues + sprints</div></div></div>
+      <div class="ipill"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L2 9l7 7 7-7-7-7zm0 3l4 4-4 4-4-4 4-4z" fill="#2684FF"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Jira</div><div style="font-size:11px;color:var(--muted);">Backlog push</div></div></div>
+      <div class="ipill"><div style="width:18px;height:18px;border-radius:3px;background:rgba(220,224,240,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x=".5" y=".5" width="9" height="9" rx="1.5" fill="var(--fg)" opacity=".5"/><path d="M2 3.5h6M2 5.5h6M2 7.5h4" stroke="var(--bg)" stroke-width="1.2" stroke-linecap="round"/></svg></div><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Notion</div><div style="font-size:11px;color:var(--muted);">Task database</div></div></div>
+      <div class="ipill"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5.5" cy="5.5" r="2.5" fill="#E01E5A"/><circle cx="12.5" cy="5.5" r="2.5" fill="#36C5F0"/><circle cx="5.5" cy="12.5" r="2.5" fill="#2EB67D"/><circle cx="12.5" cy="12.5" r="2.5" fill="#ECB22E"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Slack</div><div style="font-size:11px;color:var(--muted);">Task summaries</div></div></div>
+      <div class="ipill"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" fill="#FF4154" opacity=".1"/><circle cx="9" cy="9" r="3" fill="#FF4154"/><path d="M9 3.5v1.5M9 13v1.5M3.5 9H5M13 9h1.5" stroke="#FF4154" stroke-width="1.4" stroke-linecap="round"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">Loom</div><div style="font-size:11px;color:var(--muted);">Video import</div></div></div>
+      <div class="ipill" style="border-color:rgba(232,149,74,.18);background:rgba(232,149,74,.03);"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M4 7L1 9l3 2M14 7l3 2-3 2M10.5 4l-3 10"/></svg><div><div style="font-size:13px;color:var(--fg);font-weight:500;">REST API</div><div style="font-size:11px;color:var(--muted);">Build your own</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ SECURITY ══════════════════════════════════════ -->
+<div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:32px 0;">
+  <div class="wrap rv" style="display:flex;gap:36px;flex-wrap:wrap;justify-content:center;align-items:center;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round"><path d="M7.5 2L2 4.5v4c0 3 2.5 5 5.5 6 3-1 5.5-3 5.5-6v-4L7.5 2z"/><path d="M5 7.5l2 2 3-3" stroke="var(--accent)"/></svg>
+      SOC 2 Type II (in progress)
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="6.5" width="10" height="7" rx="1.5"/><path d="M4.5 6.5V4.5a3 3 0 016 0v2"/></svg>
+      AES-256 encryption
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 5v3l2 1.5"/></svg>
+      Recordings deleted post-processing
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 2c0 0-2.5 2-2.5 5.5S7.5 13 7.5 13s2.5-2 2.5-5.5S7.5 2 7.5 2zM2 7.5h11"/></svg>
+      GDPR · EU &amp; US residency
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ CTA ════════════════════════════════════════════ -->
+<section id="cta" style="padding:120px 0;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(232,149,74,.08),transparent 55%);pointer-events:none;"></div>
+
+  <div class="wrap rv" style="text-align:center;position:relative;">
+    <div class="mono" data-i18n="cta.eyebrow" style="font-size:11px;color:var(--accent);letter-spacing:.1em;margin-bottom:24px;">// private beta</div>
+    <h2 class="display" data-i18n="cta.h1" style="font-size:clamp(2rem,5.5vw,4.5rem);color:var(--fg);margin-bottom:10px;">Stop writing tasks.</h2>
+    <h2 class="display" data-i18n="cta.h2" style="font-size:clamp(2rem,5.5vw,4.5rem);color:var(--accent);margin-bottom:24px;">Start shipping.</h2>
+    <p data-i18n="cta.p" style="font-size:15px;color:var(--muted);max-width:380px;margin:0 auto 40px;line-height:1.65;">
+      200+ product teams on the waitlist. We onboard weekly in batches of 20. Free for beta users.
+    </p>
+
+    <form id="f" style="display:flex;gap:8px;max-width:400px;margin:0 auto 16px;flex-wrap:wrap;justify-content:center;">
+      <label for="em" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">Email address</label>
+      <input id="em" type="email" data-i18n-ph="cta.ph" placeholder="you@company.com" required
+        style="flex:1;min-width:190px;padding:11px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--fg);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color 150ms;"
+        onfocus="this.style.borderColor='var(--accent)'"
+        onblur="this.style.borderColor='var(--border2)'">
+      <button id="cta-submit" type="submit" class="btn btn-fill"><span data-i18n="cta.btn">Request access →</span></button>
+    </form>
+    <p data-i18n="cta.trust" style="font-size:12px;color:var(--muted);">Free during beta · No credit card · Invite within 48h</p>
+
+    <div style="display:flex;gap:52px;justify-content:center;margin-top:64px;flex-wrap:wrap;">
+      <div><div class="stat-n"><span class="count-num" data-target="200" data-decimals="0">0</span><span style="color:var(--accent);">+</span></div><div data-i18n="stats.s3" style="font-size:12px;color:var(--muted);margin-top:5px;">teams waitlisted</div></div>
+      <div><div class="stat-n"><span style="color:var(--accent);">&lt;</span><span class="count-num" data-target="5" data-decimals="0">0</span><span style="color:var(--accent);">s</span></div><div data-i18n="stats.s2" style="font-size:12px;color:var(--muted);margin-top:5px;">to generate tasks</div></div>
+      <div><div class="stat-n"><span class="count-num" data-target="4.8" data-decimals="1">0</span><span style="color:var(--accent);">h</span></div><div data-i18n="stats.s1" style="font-size:12px;color:var(--muted);margin-top:5px;">saved / PM / week</div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ FOOTER ════════════════════════════════════════ -->
+<footer style="border-top:1px solid var(--border);padding:32px 0;">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="var(--accent)" opacity=".12"/><path d="M7 7h6a4 4 0 010 8H7V7z" stroke="var(--accent)" stroke-width="1.75" stroke-linejoin="round"/><path d="M7 15v2" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round"/></svg>
+      <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;color:var(--fg);">Draft</span>
+      <span style="font-size:12px;color:var(--muted);">© 2026</span>
+      <span style="font-size:10px;color:var(--muted);opacity:0.65;margin-left:8px;font-family:'JetBrains Mono',monospace;" data-i18n="footer.concept">Concept project · brand fictional</span>
+    </div>
+    <div style="display:flex;gap:20px;">
+      <a href="#" style="font-size:13px;color:var(--muted);text-decoration:none;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="footer.privacy">Privacy</span></a>
+      <a href="#" style="font-size:13px;color:var(--muted);text-decoration:none;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="footer.terms">Terms</span></a>
+      <a href="mailto:hello@usedraft.ai" style="font-size:13px;color:var(--muted);text-decoration:none;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">hello@usedraft.ai</a>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="#" style="color:var(--muted);transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'" aria-label="X">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="#" style="color:var(--muted);transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'" aria-label="LinkedIn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+/* ═══════════════════════════════════════════════════
+   TRANSLATIONS
+═══════════════════════════════════════════════════ */
+const T = {
+  en: {
+    'nav.how':'How it works','nav.who':'For teams','nav.integ':'Integrations','nav.cta':'Join the beta',
+    'hero.badge':'Private beta · AI for product teams',
+    'hero.h1a':'The meeting ended.','hero.h1b':'The backlog','hero.h1c':'is ready.',
+    'hero.sub':'Draft listens to your product calls, extracts every action item, and pushes sprint-ready tasks to Linear or Jira — in seconds.',
+    'hero.cta1':'Join the beta','hero.cta2':'How it works',
+    'hero.trust':'Free during beta · No credit card · Invite within 48h',
+    'stats.s1':'saved per PM / week','stats.s2':'call to tasks, average','stats.s3':'teams on waitlist',
+    'prob.q':'"Let\'s add this to the backlog."','prob.a':'Nobody does.',
+    'prob.p':'Product decisions get buried in Zoom recordings. Action items live in Notion drafts nobody reads. The backlog on Monday is guesswork.',
+    'prob.p1l':'Pain 01','prob.p1h':'30 min after every call','prob.p1p':'Writing notes, converting to tickets, tracking who said what. Every meeting. Every time.',
+    'prob.p2l':'Pain 02','prob.p2h':'Context disappears','prob.p2p':'By the time tickets get created, the decision context is gone. Nobody knows why the backlog looks like it does.',
+    'prob.p3l':'Pain 03','prob.p3h':'4 tools to create 1 task','prob.p3p':'Zoom → Notion → Linear → Slack. Every meeting, every time, for every task.',
+    'how.title':'How Draft works',
+    'how.s1h':'Connect your calls','how.s1p':'Link Zoom, Google Meet, or paste a Loom URL. Draft processes recordings silently — no bot, no extra setup required.',
+    'how.s2h':'AI extracts every decision','how.s2p':'Draft identifies action items, blockers, owners, and deadlines from natural conversation. Context, not just keywords.',
+    'how.s2f1':'Recognizes assignees by name','how.s2f2':'Auto-detects priority from urgency signals','how.s2f3':'Links tasks to exact transcript timestamps',
+    'how.s3h':'Push to backlog. One click.','how.s3p':'Review generated tasks, edit if needed, push directly to Linear, Jira, or Notion. Each task arrives with full decision context.',
+    'how.push':'Push 4 tasks to Linear',
+    'who.title':'Built for the people running product',
+    'who.r1h':'Product\nManagers.','who.r1p':'Sprint planning, backlog grooming, stakeholder calls — every meeting generates a ready board. Stop being the note-taker. Start being the decision-maker.',
+    'who.r2h':'Engineering\nLeads.','who.r2p':'Retros and standups become Jira tickets without a PM in the loop. Engineers know what to work on — without waiting for someone to update the board.',
+    'who.r3h':'Startup\nFounders.','who.r3p':'10–50 people, no dedicated PM. Customer calls become feature requests. Board meetings become roadmap decisions. Draft keeps your team aligned without the overhead.',
+    'integ.title':'Fits your existing stack','integ.sub':'No migration, no new workflows. Draft connects to the tools your team already uses every day.',
+    'cta.eyebrow':'// private beta','cta.h1':'Stop writing tasks.','cta.h2':'Start shipping.',
+    'cta.p':'200+ product teams on the waitlist. We onboard weekly in batches of 20. Free for beta users.',
+    'cta.ph':'you@company.com','cta.btn':'Request access →','cta.trust':'Free during beta · No credit card · Invite within 48h',
+    'footer.privacy':'Privacy','footer.terms':'Terms','footer.concept':'Concept project · brand fictional'
+  },
+  ru: {
+    'nav.how':'Как работает','nav.who':'Для команд','nav.integ':'Интеграции','nav.cta':'Войти в бету',
+    'hero.badge':'Приватная бета · ИИ для продуктовых команд',
+    'hero.h1a':'Встреча закончилась.','hero.h1b':'Бэклог','hero.h1c':'уже готов.',
+    'hero.sub':'Draft слушает ваши продуктовые звонки, извлекает все задачи и отправляет спринт-готовые тикеты в Linear или Jira — за секунды.',
+    'hero.cta1':'Войти в бету','hero.cta2':'Как работает',
+    'hero.trust':'Бесплатно в бете · Без карты · Приглашение за 48 ч',
+    'stats.s1':'сохранено на PM / неделю','stats.s2':'от звонка до задач','stats.s3':'команд в очереди',
+    'prob.q':'"Добавим это в бэклог."','prob.a':'Никто не добавит.',
+    'prob.p':'Продуктовые решения тонут в записях Zoom. Задачи живут в черновиках Notion, которые никто не читает. Бэклог в понедельник — это угадайка.',
+    'prob.p1l':'Боль 01','prob.p1h':'30 минут после каждого звонка','prob.p1p':'Писать заметки, создавать тикеты, отслеживать кто что сказал. Каждое совещание. Каждый раз.',
+    'prob.p2l':'Боль 02','prob.p2h':'Контекст исчезает','prob.p2p':'К моменту создания тикетов контекст решения уже потерян. Никто не знает, почему бэклог выглядит именно так.',
+    'prob.p3l':'Боль 03','prob.p3h':'4 инструмента для 1 задачи','prob.p3p':'Zoom → Notion → Linear → Slack. Каждое совещание, для каждой задачи.',
+    'how.title':'Как работает Draft',
+    'how.s1h':'Подключите звонки','how.s1p':'Подключите Zoom, Google Meet или вставьте ссылку Loom. Draft обрабатывает записи в фоне — без бота и дополнительной настройки.',
+    'how.s2h':'ИИ извлекает каждое решение','how.s2p':'Draft определяет задачи, блокеры, владельцев и дедлайны из живого разговора. Контекст, а не только ключевые слова.',
+    'how.s2f1':'Распознаёт исполнителей по имени','how.s2f2':'Автоматически определяет приоритет из сигналов срочности','how.s2f3':'Привязывает задачи к точным меткам транскрипта',
+    'how.s3h':'В бэклог. Один клик.','how.s3p':'Просмотрите задачи, отредактируйте при необходимости, отправьте в Linear, Jira или Notion. Каждая задача с полным контекстом решения.',
+    'how.push':'Отправить 4 задачи в Linear',
+    'who.title':'Создан для людей, управляющих продуктом',
+    'who.r1h':'Продуктовые\nменеджеры.','who.r1p':'Планирование спринтов, груминг бэклога, встречи со стейкхолдерами — каждая встреча генерирует готовую доску. Перестаньте вести заметки. Начните принимать решения.',
+    'who.r2h':'Лиды\nразработки.','who.r2p':'Ретро и стендапы превращаются в Jira-тикеты без участия PM. Инженеры знают что делать — без ожидания обновления доски.',
+    'who.r3h':'Основатели\nстартапов.','who.r3p':'10–50 человек без выделенного PM. Звонки с клиентами становятся фиче-реквестами. Встречи с советом — решениями роадмапа. Draft держит команду в синхронизации.',
+    'integ.title':'Встраивается в ваш стек','integ.sub':'Никаких миграций, никаких новых процессов. Draft подключается к инструментам, которые ваша команда уже использует каждый день.',
+    'cta.eyebrow':'// приватная бета','cta.h1':'Перестаньте писать задачи.','cta.h2':'Начните шипить.',
+    'cta.p':'200+ продуктовых команд в листе ожидания. Онбординг еженедельно по 20 команд. Бесплатно в бете.',
+    'cta.ph':'вы@компания.ru','cta.btn':'Запросить доступ →','cta.trust':'Бесплатно в бете · Без карты · Приглашение за 48 ч',
+    'footer.privacy':'Конфиденциальность','footer.terms':'Условия','footer.concept':'Concept-проект · бренд вымышленный'
+  },
+  pl: {
+    'nav.how':'Jak działa','nav.who':'Dla zespołów','nav.integ':'Integracje','nav.cta':'Dołącz do bety',
+    'hero.badge':'Prywatna beta · AI dla zespołów produktowych',
+    'hero.h1a':'Spotkanie się skończyło.','hero.h1b':'Backlog','hero.h1c':'jest gotowy.',
+    'hero.sub':'Draft słucha twoich rozmów produktowych, wyciąga każde działanie i wysyła gotowe zadania do Linear lub Jira — w sekundy.',
+    'hero.cta1':'Dołącz do bety','hero.cta2':'Jak działa',
+    'hero.trust':'Bezpłatnie w becie · Bez karty · Zaproszenie w 48h',
+    'stats.s1':'zaoszczędzone na PM / tydzień','stats.s2':'od rozmowy do zadań','stats.s3':'zespołów na liście',
+    'prob.q':'"Dodajmy to do backlogu."','prob.a':'Nikt tego nie robi.',
+    'prob.p':'Decyzje produktowe giną w nagraniach Zoom. Zadania żyją w roboczych dokumentach Notion, których nikt nie czyta. Backlog w poniedziałek to zgadywanie.',
+    'prob.p1l':'Ból 01','prob.p1h':'30 min po każdym spotkaniu','prob.p1p':'Pisanie notatek, tworzenie ticketów, śledzenie kto co powiedział. Każde spotkanie. Za każdym razem.',
+    'prob.p2l':'Ból 02','prob.p2h':'Kontekst znika','prob.p2p':'Gdy tickety są tworzone, kontekst decyzji przepadł. Nikt nie wie, dlaczego backlog wygląda tak jak wygląda.',
+    'prob.p3l':'Ból 03','prob.p3h':'4 narzędzia na 1 zadanie','prob.p3p':'Zoom → Notion → Linear → Slack. Każde spotkanie, każde zadanie.',
+    'how.title':'Jak działa Draft',
+    'how.s1h':'Podłącz swoje rozmowy','how.s1p':'Połącz Zoom, Google Meet lub wklej link Loom. Draft przetwarza nagrania w tle — bez bota, bez konfiguracji.',
+    'how.s2h':'AI wyciąga każdą decyzję','how.s2p':'Draft identyfikuje działania, blokery, właścicieli i terminy z naturalnej rozmowy. Kontekst, nie tylko słowa kluczowe.',
+    'how.s2f1':'Rozpoznaje osoby przypisane po imieniu','how.s2f2':'Automatycznie wykrywa priorytet z sygnałów pilności','how.s2f3':'Łączy zadania z dokładnymi znacznikami transkrypcji',
+    'how.s3h':'Push do backlogu. Jedno kliknięcie.','how.s3p':'Przeglądaj wygenerowane zadania, edytuj jeśli potrzeba, wyślij do Linear, Jira lub Notion. Każde zadanie z pełnym kontekstem.',
+    'how.push':'Wyślij 4 zadania do Linear',
+    'who.title':'Stworzony dla ludzi zarządzających produktem',
+    'who.r1h':'Product\nManagerowie.','who.r1p':'Planowanie sprintu, grooming backlogu, spotkania ze stakeholderami — każde spotkanie generuje gotową tablicę. Przestań robić notatki. Zacznij podejmować decyzje.',
+    'who.r2h':'Liderzy\ntechniczni.','who.r2p':'Retro i standapy zamieniają się w tickety Jira bez PM. Inżynierowie wiedzą co robić — bez czekania aż ktoś zaktualizuje tablicę.',
+    'who.r3h':'Założyciele\nstartupów.','who.r3p':'10–50 osób bez dedykowanego PM. Rozmowy z klientami stają się feature requestami. Spotkania zarządu stają się decyzjami roadmapy. Draft utrzymuje synchronizację.',
+    'integ.title':'Pasuje do twojego stosu','integ.sub':'Brak migracji, brak nowych przepływów. Draft łączy się z narzędziami, których twój zespół już używa każdego dnia.',
+    'cta.eyebrow':'// prywatna beta','cta.h1':'Przestań pisać zadania.','cta.h2':'Zacznij dostarczać.',
+    'cta.p':'200+ zespołów produktowych na liście. Onboarding tygodniowo w partiach po 20. Bezpłatnie w becie.',
+    'cta.ph':'ty@firma.pl','cta.btn':'Poproś o dostęp →','cta.trust':'Bezpłatnie w becie · Bez karty · Zaproszenie w 48h',
+    'footer.privacy':'Prywatność','footer.terms':'Regulamin','footer.concept':'Projekt koncepcyjny · marka fikcyjna'
+  }
+};
+
+/* ═══════════════════════════════════════════════════
+   I18N
+═══════════════════════════════════════════════════ */
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const val = T[lang][el.getAttribute('data-i18n')];
+    if (val !== undefined) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const val = T[lang][el.getAttribute('data-i18n-html')];
+    if (val !== undefined) el.innerHTML = val.replace(/\n/g, '<br>');
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const val = T[lang][el.getAttribute('data-i18n-ph')];
+    if (val !== undefined) el.placeholder = val;
+  });
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    const active = btn.getAttribute('data-lang') === lang;
+    btn.classList.toggle('active', active);
+  });
+
+  // Re-render push button in step 3 if not in success state
+  const pushBtn = document.getElementById('step3-push');
+  if (pushBtn && !pushBtn.disabled) {
+    pushBtn.querySelector('span[data-i18n="how.push"]') && (pushBtn.querySelector('span[data-i18n="how.push"]').textContent = T[lang]['how.push']);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   APP STATE MACHINE
+═══════════════════════════════════════════════════ */
+let appState = 'meetings';
+
+function setAppState(state) {
+  const panel = document.getElementById('app-panel');
+  panel.classList.add('fading');
+  setTimeout(() => {
+    appState = state;
+    updateSidebar();
+    panel.innerHTML = renderPanel(state);
+    panel.classList.remove('fading');
+    // Update bar title
+    const titles = { meetings:'Draft · Meetings', detail:'Draft · Sprint Planning', tasks:'Draft · Tasks', integrations:'Draft · Integrations', pushed:'Draft · Linear' };
+    const barTitle = document.getElementById('app-bar-title');
+    if (barTitle) barTitle.textContent = titles[state] || 'Draft · Workspace';
+    // Update recent item highlight
+    const r1 = document.getElementById('sb-recent-1');
+    if (r1) r1.style.color = (state === 'detail' || state === 'pushed') ? 'var(--accent)' : 'var(--accent)';
+  }, 120);
+}
+
+function updateSidebar() {
+  const activeMap = { meetings:'meetings', detail:'meetings', pushed:'meetings', tasks:'tasks', integrations:'integrations' };
+  const active = activeMap[appState] || 'meetings';
+  ['meetings','tasks','integrations'].forEach(s => {
+    const el = document.getElementById('sb-' + s);
+    if (!el) return;
+    if (s === active) {
+      el.setAttribute('data-active','');
+    } else {
+      el.removeAttribute('data-active');
+    }
+  });
+}
+
+/* ─── Panel renderers ─── */
+function renderPanel(state) {
+  const map = { meetings: panelMeetings, detail: panelDetail, pushed: panelPushed, tasks: panelTasks, integrations: panelIntegrations };
+  return (map[state] || panelMeetings)();
+}
+
+function panelMeetings() {
+  return `
+    <div style="border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:12px;font-weight:600;color:var(--fg);">Recent meetings</span>
+      <span style="margin-left:auto;font-size:9px;background:rgba(232,149,74,.12);color:var(--accent);padding:2px 6px;border-radius:3px;font-weight:700;">3 new</span>
+    </div>
+    <div style="flex:1;padding:10px;display:flex;flex-direction:column;gap:6px;overflow:hidden;">
+      <div onclick="setAppState('detail')" style="cursor:pointer;background:rgba(232,149,74,.06);border:1px solid rgba(232,149,74,.22);border-radius:8px;padding:10px 12px;transition:border-color 150ms;" onmouseover="this.style.borderColor='rgba(232,149,74,.5)'" onmouseout="this.style.borderColor='rgba(232,149,74,.22)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:600;color:var(--fg);">Sprint Planning</span>
+          <span style="font-size:9px;color:var(--muted);">Today · 47:23</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--accent);background:rgba(232,149,74,.1);border:1px solid rgba(232,149,74,.2);padding:2px 7px;border-radius:3px;font-weight:600;">4 tasks</span>
+          <span style="font-size:10px;color:var(--muted);">Alex · Maria · Tom</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--accent);">→ Open</span>
+        </div>
+      </div>
+      <div onclick="setAppState('detail')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:border-color 150ms;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:500;color:var(--fg);">Customer call — Acme</span>
+          <span style="font-size:9px;color:var(--muted);">Yesterday · 31:05</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--muted);background:rgba(92,98,128,.1);border:1px solid var(--border);padding:2px 7px;border-radius:3px;">2 tasks</span>
+          <span style="font-size:10px;color:var(--muted);">Alex · Kate</span>
+        </div>
+      </div>
+      <div onclick="setAppState('detail')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:border-color 150ms;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:500;color:var(--fg);">Design retro</span>
+          <span style="font-size:9px;color:var(--muted);">Mon · 22:48</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--muted);background:rgba(92,98,128,.1);border:1px solid var(--border);padding:2px 7px;border-radius:3px;">6 tasks</span>
+          <span style="font-size:10px;color:var(--muted);">Maria · David</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function panelDetail() {
+  return `
+    <div style="border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <button onclick="setAppState('meetings')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;padding:0;display:flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;transition:color 120ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2L3 5l3.5 3"/></svg>Back
+      </button>
+      <span style="font-size:11px;color:var(--fg);font-weight:600;">Sprint Planning</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:var(--card);padding:1px 5px;border-radius:3px;margin-left:auto;">47:23</span>
+    </div>
+    <div style="padding:10px 12px;display:flex;flex-direction:column;gap:7px;border-bottom:1px solid var(--border);flex-shrink:0;font-size:10px;">
+      <div style="color:var(--muted);line-height:1.5;">
+        <span style="color:var(--fg);font-weight:600;">Alex C.</span>&nbsp;<span style="font-family:'JetBrains Mono',monospace;font-size:9px;">02:14</span><br>
+        "Let's prioritize the onboarding rework..."
+      </div>
+      <div style="background:rgba(232,149,74,.08);border-left:2px solid var(--accent);padding:6px 8px;border-radius:0 5px 5px 0;line-height:1.5;color:var(--fg);">
+        <span style="color:var(--accent);font-weight:600;">Maria L.</span>&nbsp;<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">02:38</span><br>
+        "Sure — need design review first."
+      </div>
+      <div style="color:var(--muted);line-height:1.5;">
+        <span style="color:var(--fg);font-weight:600;">Tom R.</span>&nbsp;<span style="font-family:'JetBrains Mono',monospace;font-size:9px;">03:14</span><br>
+        "Auth bug is blocking Acme. Patch today."
+      </div>
+    </div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-size:11px;font-weight:600;color:var(--fg);">Generated tasks</span>
+      <span style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(232,149,74,.12);padding:2px 6px;border-radius:3px;">4 new</span>
+    </div>
+    <div style="flex:1;padding:8px 10px;display:flex;flex-direction:column;gap:5px;overflow:hidden;">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:10px;color:var(--fg);">Scope onboarding rework&nbsp;<span style="color:var(--muted);">· Maria · Thu</span></div>
+      <div style="background:var(--card);border:1px solid rgba(255,95,87,.22);border-radius:6px;padding:7px 10px;font-size:10px;color:var(--fg);">Fix auth bug — Acme (P0)&nbsp;<span style="color:#FF5F57;">· Tom · Today</span></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:10px;color:var(--muted);">Analytics dashboard → Q3</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:10px;color:var(--muted);">Design sync · new nav</div>
+      <button onclick="setAppState('pushed')" style="margin-top:2px;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;width:100%;transition:background 150ms;" onmouseover="this.style.background='var(--accent-d)'" onmouseout="this.style.background='var(--accent)'">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5h7M5.5 2l3 3-3 3"/></svg>
+        Push to Linear
+      </button>
+    </div>
+  `;
+}
+
+function panelPushed() {
+  return `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:24px 20px;text-align:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.3);display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#34C759" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l5 5 9-9"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--fg);margin-bottom:4px;">4 tasks pushed to Linear</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">Sprint-24 · ENG-1042 to ENG-1045</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;width:100%;max-width:200px;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted);">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#34C759" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1042 · Scope onboarding</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted);">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#34C759" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1043 · Fix auth bug (P0)</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted);">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#34C759" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1044 · Analytics → Q3</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted);">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#34C759" stroke-width="1.8" stroke-linecap="round"><path d="M1 4.5l2 2 4.5-4.5"/></svg>ENG-1045 · Design sync</div>
+      </div>
+      <button onclick="setAppState('meetings')" style="background:none;border:1px solid var(--border2);border-radius:6px;padding:7px 14px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:border-color 150ms,color 150ms;" onmouseover="this.style.borderColor='var(--muted)';this.style.color='var(--fg)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">← Back to meetings</button>
+    </div>
+  `;
+}
+
+function panelTasks() {
+  return `
+    <div style="border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:12px;font-weight:600;color:var(--fg);">All tasks</span>
+      <span style="font-size:9px;background:rgba(232,149,74,.12);color:var(--accent);padding:2px 6px;border-radius:3px;font-weight:700;">12</span>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <span style="font-size:9px;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:2px 7px;border-radius:3px;cursor:pointer;">All</span>
+        <span style="font-size:9px;color:var(--accent);background:rgba(232,149,74,.1);border:1px solid rgba(232,149,74,.2);padding:2px 7px;border-radius:3px;cursor:pointer;">Open</span>
+      </div>
+    </div>
+    <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--card);border:1px solid var(--border2);">
+        <div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0;"></div>
+        <span style="font-size:10px;color:var(--fg);flex:1;">Scope onboarding rework</span>
+        <span style="font-size:9px;color:var(--muted);">Maria</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--card);border:1px solid rgba(255,95,87,.22);">
+        <div style="width:10px;height:10px;border-radius:3px;background:rgba(255,95,87,.7);flex-shrink:0;"></div>
+        <span style="font-size:10px;color:var(--fg);flex:1;">Fix auth bug (P0)</span>
+        <span style="font-size:9px;color:#FF5F57;">Today</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--card);border:1px solid var(--border);">
+        <div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;"></div>
+        <span style="font-size:10px;color:var(--muted);flex:1;">Analytics dashboard → Q3</span>
+        <span style="font-size:9px;color:var(--muted);">Deferred</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--card);border:1px solid var(--border);">
+        <div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;"></div>
+        <span style="font-size:10px;color:var(--muted);flex:1;">Design sync · new nav</span>
+        <span style="font-size:9px;color:var(--muted);">Tue</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--card);border:1px solid var(--border);">
+        <div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0;"></div>
+        <span style="font-size:10px;color:var(--fg);flex:1;">Acme integration review</span>
+        <span style="font-size:9px;color:var(--muted);">Kate</span>
+      </div>
+      <div style="padding:6px 9px;font-size:10px;color:var(--muted);text-align:center;margin-top:1px;cursor:pointer;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">+ 7 more tasks</div>
+    </div>
+  `;
+}
+
+function panelIntegrations() {
+  return `
+    <div style="border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:12px;font-weight:600;color:var(--fg);">Integrations</span>
+      <span style="margin-left:auto;font-size:9px;color:var(--muted);">2 connected</span>
+    </div>
+    <div style="flex:1;padding:10px;display:flex;flex-direction:column;gap:6px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="6" height="8" rx="1.2" fill="#2D8CFF" opacity=".8"/><path d="M7.5 6l5.5-2.5v7L7.5 8V6z" fill="#2D8CFF" opacity=".8"/></svg>
+        <span style="font-size:11px;color:var(--fg);flex:1;">Zoom</span>
+        <span style="font-size:9px;color:#34C759;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.25);padding:2px 7px;border-radius:3px;">Connected</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card);border:1px solid rgba(232,149,74,.2);border-radius:7px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 5-5 1L2 12V2z" fill="#5A64FF"/></svg>
+        <span style="font-size:11px;color:var(--fg);flex:1;">Linear</span>
+        <span style="font-size:9px;color:var(--accent);background:rgba(232,149,74,.12);border:1px solid rgba(232,149,74,.25);padding:2px 7px;border-radius:3px;">Connected</span>
+      </div>
+      <div id="integ-gmeet" style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;">
+        <div style="width:14px;height:14px;border-radius:3px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#34A853;flex-shrink:0;">G</div>
+        <span style="font-size:11px;color:var(--muted);flex:1;">Google Meet</span>
+        <span onclick="connectFromPanel(this,'integ-gmeet')" style="font-size:9px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all 120ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">Connect →</span>
+      </div>
+      <div id="integ-jira" style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L1.5 7l5.5 5.5L12.5 7 7 1.5zm0 2.5l3 3-3 3-3-3 3-3z" fill="#2684FF"/></svg>
+        <span style="font-size:11px;color:var(--muted);flex:1;">Jira</span>
+        <span onclick="connectFromPanel(this,'integ-jira')" style="font-size:9px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all 120ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">Connect →</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;opacity:.5;">
+        <div style="width:14px;height:14px;border-radius:3px;background:rgba(220,224,240,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;font-weight:700;color:var(--muted);">N</div>
+        <span style="font-size:11px;color:var(--muted);flex:1;">Notion</span>
+        <span style="font-size:9px;color:var(--muted);padding:2px 7px;">Soon</span>
+      </div>
+    </div>
+  `;
+}
+
+/* ─── Step 1 connect button ─── */
+function connectGoogleMeet(el) {
+  el.textContent = '✓ Connected';
+  el.style.color = '#34C759';
+  el.style.background = 'rgba(52,199,89,.1)';
+  el.style.border = '1px solid rgba(52,199,89,.25)';
+  el.style.cursor = 'default';
+  el.onclick = null;
+  const row = document.getElementById('step1-gmeet');
+  if (row) { row.style.borderColor = 'rgba(52,199,89,.25)'; row.style.background = 'rgba(52,199,89,.03)'; }
+}
+
+/* ─── Integrations panel connect ─── */
+function connectFromPanel(el, rowId) {
+  el.textContent = '✓ Connected';
+  el.style.color = '#34C759';
+  el.style.background = 'rgba(52,199,89,.1)';
+  el.style.border = '1px solid rgba(52,199,89,.25)';
+  el.style.cursor = 'default';
+  el.onmouseover = null; el.onmouseout = null; el.onclick = null;
+  const row = document.getElementById(rowId);
+  if (row) {
+    row.style.borderColor = 'rgba(52,199,89,.25)';
+    const label = row.querySelector('span:first-of-type');
+    if (label) label.style.color = 'var(--fg)';
+  }
+}
+
+/* ─── Step 3 push button ─── */
+function pushToLinear(btn) {
+  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5l3.5 3.5 5.5-6"/></svg><span>4 tasks pushed ✓</span>';
+  btn.style.background = '#1a9e34';
+  btn.style.boxShadow = '0 0 20px rgba(52,199,89,.15)';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5h8M6 1.5l4 4.5-4 4.5"/></svg><span data-i18n="how.push">' + T[currentLang]['how.push'] + '</span>';
+    btn.style.background = 'var(--accent)';
+    btn.style.boxShadow = '';
+    btn.disabled = false;
+  }, 2800);
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+// Render initial panel
+setAppState('meetings');
+
+// Scroll reveal
+const io = new IntersectionObserver(
+  es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }),
+  { threshold: 0.08 }
+);
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+/* ═══════════════════════════════════════════════════
+   3D PARALLAX — hero mockup tilts with mouse
+═══════════════════════════════════════════════════ */
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const mockupCol = document.querySelector('.hero-mockup');
+  const frame     = mockupCol && mockupCol.querySelector('.app-frame');
+  if (!mockupCol || !frame) return;
+
+  let raf = null;
+  let targetRX = 0, targetRY = 0;
+  let currentRX = 0, currentRY = 0;
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function tick() {
+    currentRX = lerp(currentRX, targetRX, 0.08);
+    currentRY = lerp(currentRY, targetRY, 0.08);
+    frame.style.transform =
+      `perspective(1100px) rotateX(${currentRX.toFixed(3)}deg) rotateY(${currentRY.toFixed(3)}deg) translateZ(8px)`;
+    frame.style.boxShadow =
+      `0 0 0 1px rgba(232,149,74,0.08),` +
+      `0 ${28 + Math.abs(currentRX)}px ${70 + Math.abs(currentRX)*3}px rgba(0,0,0,0.6),` +
+      `0 0 ${50 + Math.abs(currentRY)*4}px rgba(232,149,74,${0.1 + Math.abs(currentRY)*0.012})`;
+    if (Math.abs(currentRX - targetRX) > 0.01 || Math.abs(currentRY - targetRY) > 0.01) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      raf = null;
+    }
+  }
+
+  mockupCol.addEventListener('mousemove', e => {
+    const r  = mockupCol.getBoundingClientRect();
+    const x  = (e.clientX - r.left)  / r.width  - 0.5; // -0.5 … +0.5
+    const y  = (e.clientY - r.top)   / r.height - 0.5;
+    targetRY =  x * 9;   // tilt left-right
+    targetRX = -y * 6;   // tilt up-down
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+
+  mockupCol.addEventListener('mouseleave', () => {
+    targetRX = 0; targetRY = 0;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════
+   COUNTER ANIMATION — numbers count up on scroll
+═══════════════════════════════════════════════════ */
+(function() {
+  function animateCount(el) {
+    if (el.dataset.animated) return;
+    el.dataset.animated = '1';
+    const target   = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals) || 0;
+    const duration = 1600;
+    const start    = performance.now();
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+    function frame(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const v = easeOut(p) * target;
+      el.textContent = decimals ? v.toFixed(decimals) : Math.floor(v);
+      if (p < 1) requestAnimationFrame(frame);
+      else el.textContent = decimals ? target.toFixed(decimals) : target;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const counterIO = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.count-num').forEach(animateCount);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  // Observe both stats strips
+  document.querySelectorAll('.rv, section').forEach(el => {
+    if (el.querySelector('.count-num')) counterIO.observe(el);
+  });
+  // Also observe the divs wrapping stats
+  document.querySelectorAll('.count-num').forEach(el => {
+    const parent = el.closest('[class]') || el.parentElement.parentElement;
+    counterIO.observe(parent);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════
+   SUBTLE CURSOR GLOW — follows mouse across the page
+═══════════════════════════════════════════════════ */
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const glow = document.createElement('div');
+  glow.style.cssText =
+    'position:fixed;pointer-events:none;z-index:9999;width:320px;height:320px;' +
+    'border-radius:50%;background:radial-gradient(ellipse,rgba(232,149,74,0.055),transparent 65%);' +
+    'transform:translate(-50%,-50%);transition:opacity 300ms;opacity:0;';
+  document.body.appendChild(glow);
+  let mx = 0, my = 0, gx = 0, gy = 0, visible = false;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    if (!visible) { visible = true; glow.style.opacity = '1'; }
+  });
+  document.addEventListener('mouseleave', () => { visible = false; glow.style.opacity = '0'; });
+  (function loop() {
+    gx += (mx - gx) * 0.1;
+    gy += (my - gy) * 0.1;
+    glow.style.left = gx + 'px';
+    glow.style.top  = gy + 'px';
+    requestAnimationFrame(loop);
+  })();
+})();
+
+// Form
+document.getElementById('f').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('cta-submit');
+  btn.innerHTML = '<span>✓ You\'re on the list</span>';
+  btn.style.background = 'var(--accent-d)';
+  btn.disabled = true;
+  document.getElementById('em').disabled = true;
+});
+</script>
+</body>
+</html>
