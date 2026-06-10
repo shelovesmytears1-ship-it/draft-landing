@@ -38,6 +38,7 @@
 
     html, body { height: 100%; }
 
+    html { overflow-x: hidden; }
     body {
       background: var(--bg);
       color: var(--fg);
@@ -46,6 +47,7 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
 
     .display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
@@ -226,6 +228,10 @@
       .step-inner { grid-template-columns: 1fr !important; }
       .persona-row { grid-template-columns: 1fr; gap: 12px; }
       .integ-grid { grid-template-columns: repeat(2,1fr) !important; }
+      .nav-center { display: none !important; }
+    }
+    @media (max-width: 420px) {
+      .nav-cta { display: none !important; }
     }
   </style>
 </head>
@@ -245,7 +251,7 @@
       <span style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--accent);background:rgba(232,149,74,.12);border:1px solid rgba(232,149,74,.24);padding:2px 6px;border-radius:4px;">BETA</span>
     </a>
 
-    <div style="display:flex;align-items:center;gap:24px;">
+    <div class="nav-center" style="display:flex;align-items:center;gap:24px;">
       <a href="#how"   style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.how">How it works</span></a>
       <a href="#who"   style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.who">For teams</span></a>
       <a href="#integ" style="font-size:14px;color:var(--muted);text-decoration:none;transition:color 150ms;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'"><span data-i18n="nav.integ">Integrations</span></a>
@@ -258,7 +264,7 @@
         <button class="lang-btn"        data-lang="ru" onclick="setLang('ru')">RU</button>
         <button class="lang-btn"        data-lang="pl" onclick="setLang('pl')">PL</button>
       </div>
-      <a href="#cta" class="btn btn-fill"><span data-i18n="nav.cta">Join the beta</span></a>
+      <a href="#cta" class="btn btn-fill nav-cta"><span data-i18n="nav.cta">Join the beta</span></a>
     </div>
 
   </div>
