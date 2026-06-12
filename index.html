@@ -38,7 +38,10 @@
 
     html, body { height: 100%; }
 
-    html { overflow-x: hidden; }
+    /* overflow-x: clip prevents horizontal scroll from decorative hero elements
+       WITHOUT turning overflow-y into a scroll container (which `hidden` does,
+       and which broke vertical scrolling). */
+    html { overflow-x: clip; }
     body {
       background: var(--bg);
       color: var(--fg);
@@ -47,7 +50,7 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
 
     .display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
